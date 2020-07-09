@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -37,6 +38,23 @@ func (s *server) handleAbout() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "About me")
 	}
+}
+
+// respond helper bare bones
+func (s *server) respond(w http.ResponseWriter, r *http.Request, data interface{}, status int) {
+	w.WriteHeader(status)
+	if data != nil {
+		err := json.NewEncoder(w).Encode(data)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+	}
+}
+
+// decode helper
+func (s *server) decode(w http.ResponseWriter, r *http.Request, v interface{}) error {
+	return json.NewDecoder(r.Body).Decode(v)
 }
 
 // adminOnly is a middleware function which can wrapp a HandlerFunc
